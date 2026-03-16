@@ -8,7 +8,6 @@ const client = new Anthropic({
 interface GeneratedTask {
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
   status: 'not_started' | 'in_progress';
   progress: number;
   category_name: string | null;
@@ -40,7 +39,6 @@ export async function POST(request: NextRequest) {
 
 규칙:
 - 각 태스크는 구체적이고 실행 가능해야 합니다
-- priority: "low" | "medium" | "high" | "urgent"
 - status: "not_started"
 - progress: 0
 - category_name: 위 카테고리 중 가장 적합한 것 (없으면 null)
@@ -48,7 +46,7 @@ export async function POST(request: NextRequest) {
 - 반드시 JSON 배열만 응답하세요. 다른 텍스트 없이 순수 JSON만 반환하세요.
 
 형식:
-[{"title":"..","description":"..","priority":"..","status":"not_started","progress":0,"category_name":".."}]
+[{"title":"..","description":"..","status":"not_started","progress":0,"category_name":".."}]
 
 사용자 요청: ${prompt}`,
         },

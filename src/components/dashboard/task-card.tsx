@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Pencil, Trash2, ExternalLink, Calendar } from 'lucide-react';
 import type { TaskWithCategory } from '@/lib/types/database';
-import { STATUS_CONFIG, PRIORITY_CONFIG } from '@/lib/types/database';
+import { STATUS_CONFIG } from '@/lib/types/database';
 import { getDDay, formatDate } from '@/lib/utils';
 import { updateTask } from '@/lib/actions/task-actions';
 import Link from 'next/link';
@@ -25,7 +25,6 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
   const statusConfig = STATUS_CONFIG[task.status];
-  const priorityConfig = PRIORITY_CONFIG[task.priority];
   const [progress, setProgress] = useState(task.progress);
   const [, startTransition] = useTransition();
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,9 +49,6 @@ export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <Badge variant="outline" className={priorityConfig.color}>
-                {priorityConfig.label}
-              </Badge>
               <Badge variant="outline" className={statusConfig.color}>
                 {statusConfig.label}
               </Badge>

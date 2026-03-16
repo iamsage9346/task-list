@@ -1,5 +1,4 @@
 export type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'review' | 'completed' | 'deployed';
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type NoteType = 'blocker' | 'note' | 'update';
 
 export interface Category {
@@ -17,7 +16,6 @@ export interface Task {
   description: string | null;
   progress: number;
   status: TaskStatus;
-  priority: TaskPriority;
   category_id: string | null;
   start_date: string | null;
   deployment_date: string | null;
@@ -48,7 +46,6 @@ export interface CreateTaskInput {
   description?: string;
   progress?: number;
   status?: TaskStatus;
-  priority?: TaskPriority;
   category_id?: string | null;
   start_date?: string | null;
   deployment_date?: string | null;
@@ -88,9 +85,3 @@ export const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string }>
   deployed: { label: '배포됨', color: 'bg-purple-100 text-purple-800' },
 };
 
-export const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string }> = {
-  low: { label: '낮음', color: 'bg-gray-100 text-gray-700' },
-  medium: { label: '보통', color: 'bg-blue-100 text-blue-700' },
-  high: { label: '높음', color: 'bg-orange-100 text-orange-700' },
-  urgent: { label: '긴급', color: 'bg-red-100 text-red-700' },
-};

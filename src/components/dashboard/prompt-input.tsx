@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import type { Category, CreateTaskInput, TaskPriority, TaskStatus } from '@/lib/types/database';
+import type { Category, CreateTaskInput, TaskStatus } from '@/lib/types/database';
 import { STATUS_CONFIG } from '@/lib/types/database';
 import { toast } from 'sonner';
 
@@ -32,7 +32,6 @@ interface PromptInputProps {
 interface GeneratedTask {
   title: string;
   description: string;
-  priority: TaskPriority;
   status: TaskStatus;
   progress: number;
   category_name: string | null;
@@ -43,7 +42,6 @@ interface GeneratedTask {
 
 function parsePrompt(text: string, categories: Category[]): CreateTaskInput {
   let remaining = text.trim();
-  let priority: TaskPriority = 'medium';
   let status: TaskStatus = 'not_started';
   let categoryId: string | null = null;
   let startDate: string | null = null;
@@ -77,20 +75,6 @@ function parsePrompt(text: string, categories: Category[]): CreateTaskInput {
   }
   if (progress > 0 && status === 'not_started') {
     status = 'in_progress';
-  }
-
-  const priorityMap: [RegExp, TaskPriority][] = [
-    [/긴급/, 'urgent'],
-    [/높음/, 'high'],
-    [/보통/, 'medium'],
-    [/낮음/, 'low'],
-  ];
-  for (const [regex, value] of priorityMap) {
-    if (regex.test(remaining)) {
-      priority = value;
-      remaining = remaining.replace(regex, ' ');
-      break;
-    }
   }
 
   for (const cat of categories) {
@@ -153,7 +137,6 @@ function parsePrompt(text: string, categories: Category[]): CreateTaskInput {
   return {
     title,
     description,
-    priority,
     status,
     progress,
     category_id: categoryId,
@@ -255,7 +238,6 @@ export function PromptInput({ categories }: PromptInputProps) {
       return {
         title: t.title,
         description: t.description,
-        priority: t.priority,
         status: t.status,
         progress: t.status === 'completed' ? 100 : t.status === 'deployed' ? 100 : t.progress,
         category_id: matchedCategory?.id ?? null,

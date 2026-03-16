@@ -5,20 +5,31 @@ import { TaskCard } from './task-card';
 import { TaskForm } from './task-form';
 import { CategoryFilter } from './category-filter';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { createTask, updateTask, deleteTask } from '@/lib/actions/task-actions';
+import { Plus, Trash2 } from 'lucide-react';
+import { createTask, updateTask, deleteTask, deleteAllTasks } from '@/lib/actions/task-actions';
 import type {
   TaskWithCategory,
   Category,
+  TaskStatus,
   CreateTaskInput,
   UpdateTaskInput,
 } from '@/lib/types/database';
+import { STATUS_CONFIG } from '@/lib/types/database';
 import { toast } from 'sonner';
 
 interface TaskListProps {
   initialTasks: TaskWithCategory[];
   categories: Category[];
 }
+
+const STATUS_ORDER: TaskStatus[] = [
+  'in_progress',
+  'not_started',
+  'review',
+  'blocked',
+  'completed',
+  'deployed',
+];
 
 export function TaskList({ initialTasks, categories }: TaskListProps) {
   const [formOpen, setFormOpen] = useState(false);
@@ -29,6 +40,12 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
   const filteredTasks = selectedCategory
     ? initialTasks.filter((t) => t.category_id === selectedCategory)
     : initialTasks;
+
+  const tasksByStatus = STATUS_ORDER.map((status) => ({
+    status,
+    config: STATUS_CONFIG[status],
+    tasks: filteredTasks.filter((t) => t.status === status),
+  })).filter((group) => group.tasks.length > 0);
 
   const handleCreate = () => {
     setEditingTask(null);
@@ -48,6 +65,18 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
         toast.success('태스크가 삭제되었습니다.');
       } catch {
         toast.error('삭제에 실패했습니다.');
+      }
+    });
+  };
+
+  const handleDeleteAll = () => {
+    if (!confirm('모든 태스크를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+    startTransition(async () => {
+      try {
+        await deleteAllTasks();
+        toast.success('모든 태스크가 삭제되었습니다.');
+      } catch {
+        toast.error('전체 삭제에 실패했습니다.');
       }
     });
   };
@@ -74,10 +103,18 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
           selectedCategory={selectedCategory}
           onSelect={setSelectedCategory}
         />
-        <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          새 태스크
-        </Button>
+        <div className="flex gap-2">
+          {initialTasks.length > 0 && (
+            <Button variant="outline" size="sm" className="text-destructive" onClick={handleDeleteAll}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              전체 삭제
+            </Button>
+          )}
+          <Button onClick={handleCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            새 태스크
+          </Button>
+        </div>
       </div>
 
       {filteredTasks.length === 0 ? (
@@ -86,14 +123,26 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
           <p className="text-sm mt-1">새 태스크를 추가해보세요</p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+        <div className="space-y-6">
+          {tasksByStatus.map(({ status, config, tasks }) => (
+            <div key={status}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${config.color}`}>
+                  {config.label}
+                </span>
+                <span className="text-sm text-muted-foreground">{tasks.length}개</span>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {tasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, ListTodo } from 'lucide-react';
 import type { TaskWithCategory, DashboardStats, Category } from '@/lib/types/database';
-import { STATUS_CONFIG, PRIORITY_CONFIG } from '@/lib/types/database';
+import { STATUS_CONFIG } from '@/lib/types/database';
 import { formatDateKorean, getDDay, formatDate } from '@/lib/utils';
 
 interface ShareViewProps {
@@ -63,15 +63,11 @@ export function ShareView({ tasks, stats, categories }: ShareViewProps) {
               <div className="space-y-3">
                 {categoryTasks.map((task) => {
                   const statusConfig = STATUS_CONFIG[task.status];
-                  const priorityConfig = PRIORITY_CONFIG[task.priority];
                   return (
                     <div key={task.id} className="space-y-1">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="text-sm font-medium truncate">{task.title}</span>
-                          <Badge variant="outline" className={`${priorityConfig.color} text-xs shrink-0`}>
-                            {priorityConfig.label}
-                          </Badge>
                           <Badge variant="outline" className={`${statusConfig.color} text-xs shrink-0`}>
                             {statusConfig.label}
                           </Badge>

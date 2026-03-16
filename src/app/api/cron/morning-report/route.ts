@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
       .from('tasks')
       .select('*, categories(*)')
       .not('status', 'eq', 'deployed')
-      .order('priority', { ascending: true })
       .order('sort_order', { ascending: true });
 
     if (tasksError) throw tasksError;

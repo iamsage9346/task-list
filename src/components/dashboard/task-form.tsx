@@ -23,11 +23,10 @@ import type {
   TaskWithCategory,
   Category,
   TaskStatus,
-  TaskPriority,
   CreateTaskInput,
   UpdateTaskInput,
 } from '@/lib/types/database';
-import { STATUS_CONFIG, PRIORITY_CONFIG } from '@/lib/types/database';
+import { STATUS_CONFIG } from '@/lib/types/database';
 
 interface TaskFormProps {
   open: boolean;
@@ -43,7 +42,6 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
   const [description, setDescription] = useState('');
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<TaskStatus>('not_started');
-  const [priority, setPriority] = useState<TaskPriority>('medium');
   const [categoryId, setCategoryId] = useState<string>('none');
   const [startDate, setStartDate] = useState('');
   const [deploymentDate, setDeploymentDate] = useState('');
@@ -54,7 +52,6 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
       setDescription(task.description ?? '');
       setProgress(task.progress);
       setStatus(task.status);
-      setPriority(task.priority);
       setCategoryId(task.category_id ?? 'none');
       setStartDate(task.start_date ?? '');
       setDeploymentDate(task.deployment_date ?? '');
@@ -63,7 +60,6 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
       setDescription('');
       setProgress(0);
       setStatus('not_started');
-      setPriority('medium');
       setCategoryId('none');
       setStartDate('');
       setDeploymentDate('');
@@ -80,7 +76,6 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
         description: description || undefined,
         progress,
         status,
-        priority,
         category_id: categoryId === 'none' ? null : categoryId,
         start_date: startDate || null,
         deployment_date: deploymentDate || null,
@@ -121,38 +116,20 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>상태</Label>
-              <Select value={status} onValueChange={(v: string | null) => { if (v) setStatus(v as TaskStatus); }}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>우선순위</Label>
-              <Select value={priority} onValueChange={(v: string | null) => { if (v) setPriority(v as TaskPriority); }}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PRIORITY_CONFIG).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label>상태</Label>
+            <Select value={status} onValueChange={(v: string | null) => { if (v) setStatus(v as TaskStatus); }}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>
+                    {config.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

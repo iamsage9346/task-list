@@ -36,7 +36,7 @@ import type {
   CreateTaskInput,
   UpdateTaskInput,
 } from '@/lib/types/database';
-import { STATUS_CONFIG, PRIORITY_CONFIG } from '@/lib/types/database';
+import { STATUS_CONFIG } from '@/lib/types/database';
 import { formatDateKorean, getDDay } from '@/lib/utils';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -60,7 +60,6 @@ export function TaskDetail({ task, categories }: TaskDetailProps) {
   const [, startTransition] = useTransition();
 
   const statusConfig = STATUS_CONFIG[task.status];
-  const priorityConfig = PRIORITY_CONFIG[task.priority];
 
   const handleDelete = () => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -133,7 +132,6 @@ export function TaskDetail({ task, categories }: TaskDetailProps) {
           <Card>
             <CardContent className="p-6">
               <div className="flex flex-wrap gap-2 mb-4">
-                <Badge className={priorityConfig.color}>{priorityConfig.label}</Badge>
                 <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
                 {task.categories && (
                   <Badge

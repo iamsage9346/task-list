@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { TaskWithCategory } from '@/lib/types/database';
-import { PRIORITY_CONFIG } from '@/lib/types/database';
 import {
   startOfMonth,
   endOfMonth,
@@ -125,7 +124,6 @@ export function CalendarView({ tasks }: CalendarViewProps) {
                 </div>
                 <div className="space-y-0.5">
                   {dayTasks.slice(0, 3).map((task) => {
-                    const priorityConfig = PRIORITY_CONFIG[task.priority];
                     return (
                       <Link key={task.id} href={`/tasks/${task.id}`}>
                         <div

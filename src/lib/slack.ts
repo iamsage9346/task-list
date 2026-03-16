@@ -1,6 +1,5 @@
 import { formatDateKorean, getDDay, getProgressBar } from './utils';
 import type { TaskWithCategory, TaskNote } from './types/database';
-import { PRIORITY_CONFIG } from './types/database';
 
 interface SlackReportData {
   tasks: TaskWithCategory[];
@@ -13,9 +12,6 @@ export function buildMorningReport({ tasks, blockers, appUrl }: SlackReportData)
 
   const inProgressTasks = tasks.filter(
     (t) => t.status === 'in_progress' || t.status === 'review'
-  );
-  const urgentTasks = tasks.filter(
-    (t) => t.priority === 'urgent' || t.priority === 'high'
   );
   const upcomingDeployments = tasks
     .filter((t) => t.deployment_date && t.status !== 'deployed')
@@ -38,16 +34,6 @@ export function buildMorningReport({ tasks, blockers, appUrl }: SlackReportData)
 
   // Overall stats
   text += `*전체 현황: ${completedTasks}/${totalTasks}개 완료 (${overallProgress}%)*\n\n`;
-
-  // Urgent / high priority tasks
-  if (urgentTasks.length > 0) {
-    text += `*🔥 오늘 해야 할 일*\n`;
-    urgentTasks.forEach((t) => {
-      const priority = PRIORITY_CONFIG[t.priority].label;
-      text += `• [${priority}] ${t.title} (${t.progress}%)\n`;
-    });
-    text += '\n';
-  }
 
   // Progress bars for in-progress tasks
   if (inProgressTasks.length > 0) {

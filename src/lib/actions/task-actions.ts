@@ -51,7 +51,6 @@ export async function createTask(input: CreateTaskInput): Promise<void> {
     description: input.description ?? null,
     progress: input.progress ?? 0,
     status: input.status ?? 'not_started',
-    priority: input.priority ?? 'medium',
     category_id: input.category_id ?? null,
     start_date: input.start_date ?? null,
     deployment_date: input.deployment_date ?? null,
@@ -84,7 +83,6 @@ export async function createTasks(inputs: CreateTaskInput[]): Promise<void> {
     description: input.description ?? null,
     progress: input.progress ?? 0,
     status: input.status ?? 'not_started',
-    priority: input.priority ?? 'medium',
     category_id: input.category_id ?? null,
     start_date: input.start_date ?? null,
     deployment_date: input.deployment_date ?? null,
@@ -98,6 +96,13 @@ export async function createTasks(inputs: CreateTaskInput[]): Promise<void> {
 export async function deleteTask(id: string): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from('tasks').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/');
+}
+
+export async function deleteAllTasks(): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.from('tasks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   if (error) throw new Error(error.message);
   revalidatePath('/');
 }
