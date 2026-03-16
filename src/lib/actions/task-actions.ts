@@ -10,6 +10,12 @@ import type {
   DashboardStats,
 } from '@/lib/types/database';
 
+async function getUserId() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
 export async function getTasks(categoryId?: string, status?: string): Promise<TaskWithCategory[]> {
   const supabase = await createClient();
   let query = supabase
@@ -45,6 +51,7 @@ export async function getTask(id: string): Promise<TaskWithDetails> {
 
 export async function createTask(input: CreateTaskInput): Promise<void> {
   const supabase = await createClient();
+  const userId = await getUserId();
 
   const insertData: Record<string, unknown> = {
     title: input.title,
@@ -54,6 +61,7 @@ export async function createTask(input: CreateTaskInput): Promise<void> {
     category_id: input.category_id ?? null,
     start_date: input.start_date ?? null,
     deployment_date: input.deployment_date ?? null,
+    user_id: userId,
   };
 
   const { error } = await supabase.from('tasks').insert(insertData);
@@ -77,6 +85,7 @@ export async function updateTask(input: UpdateTaskInput): Promise<void> {
 
 export async function createTasks(inputs: CreateTaskInput[]): Promise<void> {
   const supabase = await createClient();
+  const userId = await getUserId();
 
   const rows = inputs.map((input) => ({
     title: input.title,
@@ -86,6 +95,7 @@ export async function createTasks(inputs: CreateTaskInput[]): Promise<void> {
     category_id: input.category_id ?? null,
     start_date: input.start_date ?? null,
     deployment_date: input.deployment_date ?? null,
+    user_id: userId,
   }));
 
   const { error } = await supabase.from('tasks').insert(rows);

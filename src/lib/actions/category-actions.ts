@@ -17,11 +17,14 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function createCategory(input: CreateCategoryInput): Promise<Category> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { data, error } = await supabase
     .from('categories')
     .insert({
       name: input.name,
       color: input.color ?? '#6366f1',
+      user_id: user?.id,
     })
     .select()
     .single();
