@@ -37,7 +37,11 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        <PromptInput categories={categories} />
+        <CalendarView tasks={tasks} />
+
+        <div className="mt-6">
+          <PromptInput categories={categories} />
+        </div>
 
         <div className="mt-6">
           <StatsHeader stats={stats} />
@@ -45,10 +49,9 @@ export default async function DashboardPage() {
 
         <Separator className="my-6" />
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
           <TaskList initialTasks={tasks} categories={categories} />
           <div className="space-y-4">
-            <CalendarView tasks={tasks} />
             <ProjectOverview upcomingDeployments={stats.upcomingDeployments} />
           </div>
         </div>

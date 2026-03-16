@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { TaskWithCategory } from '@/lib/types/database';
 import {
@@ -22,6 +21,30 @@ import {
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Link from 'next/link';
+
+const TASK_COLORS = [
+  '#3b82f6', // blue
+  '#ef4444', // red
+  '#f59e0b', // amber
+  '#10b981', // emerald
+  '#8b5cf6', // violet
+  '#ec4899', // pink
+  '#06b6d4', // cyan
+  '#f97316', // orange
+  '#6366f1', // indigo
+  '#14b8a6', // teal
+  '#e11d48', // rose
+  '#84cc16', // lime
+];
+
+function getTaskColor(taskId: string): string {
+  // Use a simple hash of the task ID to pick a consistent color
+  let hash = 0;
+  for (let i = 0; i < taskId.length; i++) {
+    hash = taskId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return TASK_COLORS[Math.abs(hash) % TASK_COLORS.length];
+}
 
 interface CalendarViewProps {
   tasks: TaskWithCategory[];
@@ -111,7 +134,7 @@ export function CalendarView({ tasks }: CalendarViewProps) {
             return (
               <div
                 key={day.toISOString()}
-                className={`min-h-[60px] p-1 rounded-md border text-xs ${
+                className={`min-h-[48px] p-1 rounded-md border text-xs ${
                   !isCurrentMonth ? 'opacity-30' : ''
                 } ${isToday ? 'border-primary bg-primary/5' : 'border-transparent'}`}
               >
@@ -122,28 +145,22 @@ export function CalendarView({ tasks }: CalendarViewProps) {
                 >
                   {format(day, 'd')}
                 </div>
-                <div className="space-y-0.5">
-                  {dayTasks.slice(0, 3).map((task) => {
+                <div className="flex flex-col gap-[2px]">
+                  {dayTasks.slice(0, 4).map((task) => {
+                    const color = getTaskColor(task.id);
                     return (
                       <Link key={task.id} href={`/tasks/${task.id}`}>
                         <div
-                          className="truncate rounded px-1 py-0.5 text-[10px] leading-tight cursor-pointer hover:opacity-80"
-                          style={{
-                            backgroundColor: task.categories?.color
-                              ? `${task.categories.color}20`
-                              : '#f3f4f6',
-                            borderLeft: `2px solid ${task.categories?.color ?? '#9ca3af'}`,
-                          }}
+                          className="h-[3px] rounded-full cursor-pointer hover:h-[5px] transition-all"
+                          style={{ backgroundColor: color }}
                           title={`${task.title} (${task.progress}%)`}
-                        >
-                          {task.title}
-                        </div>
+                        />
                       </Link>
                     );
                   })}
-                  {dayTasks.length > 3 && (
-                    <div className="text-[10px] text-muted-foreground text-center">
-                      +{dayTasks.length - 3}
+                  {dayTasks.length > 4 && (
+                    <div className="text-[9px] text-muted-foreground text-center leading-none">
+                      +{dayTasks.length - 4}
                     </div>
                   )}
                 </div>
