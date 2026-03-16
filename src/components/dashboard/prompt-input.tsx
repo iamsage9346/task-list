@@ -13,8 +13,16 @@ import {
 } from '@/components/ui/dialog';
 import { Sparkles, Loader2, Bot, Type, Check, X } from 'lucide-react';
 import { createTask, createTasks } from '@/lib/actions/task-actions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import type { Category, CreateTaskInput, TaskPriority, TaskStatus } from '@/lib/types/database';
-import { PRIORITY_CONFIG } from '@/lib/types/database';
+import { STATUS_CONFIG } from '@/lib/types/database';
 import { toast } from 'sonner';
 
 interface PromptInputProps {
@@ -28,6 +36,8 @@ interface GeneratedTask {
   status: TaskStatus;
   progress: number;
   category_name: string | null;
+  start_date: string;
+  deployment_date: string;
   selected: boolean;
 }
 
@@ -194,7 +204,12 @@ export function PromptInput({ categories }: PromptInputProps) {
       }
 
       setGeneratedTasks(
-        data.tasks.map((t: Omit<GeneratedTask, 'selected'>) => ({ ...t, selected: true }))
+        data.tasks.map((t: Omit<GeneratedTask, 'selected' | 'start_date' | 'deployment_date'>) => ({
+          ...t,
+          start_date: '',
+          deployment_date: '',
+          selected: true,
+        }))
       );
       setShowPreview(true);
     } catch {
@@ -221,6 +236,12 @@ export function PromptInput({ categories }: PromptInputProps) {
     );
   };
 
+  const updateTaskField = (index: number, field: string, value: string) => {
+    setGeneratedTasks((prev) =>
+      prev.map((t, i) => (i === index ? { ...t, [field]: value } : t))
+    );
+  };
+
   const selectedCount = generatedTasks.filter((t) => t.selected).length;
 
   const handleCreateAll = () => {
@@ -236,8 +257,10 @@ export function PromptInput({ categories }: PromptInputProps) {
         description: t.description,
         priority: t.priority,
         status: t.status,
-        progress: t.progress,
+        progress: t.status === 'completed' ? 100 : t.status === 'deployed' ? 100 : t.progress,
         category_id: matchedCategory?.id ?? null,
+        start_date: t.start_date || null,
+        deployment_date: t.deployment_date || null,
       };
     });
 
@@ -329,48 +352,83 @@ export function PromptInput({ categories }: PromptInputProps) {
               {generatedTasks.map((task, index) => (
                 <Card
                   key={index}
-                  className={`cursor-pointer transition-all ${
+                  className={`transition-all ${
                     task.selected ? 'ring-2 ring-primary' : 'opacity-50'
                   }`}
-                  onClick={() => toggleTask(index)}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-start gap-3">
                       <div
-                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border cursor-pointer ${
                           task.selected
                             ? 'bg-primary border-primary text-primary-foreground'
                             : 'border-muted-foreground/30'
                         }`}
+                        onClick={() => toggleTask(index)}
                       >
                         {task.selected && <Check className="h-3 w-3" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm">{task.title}</h4>
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-sm">{task.title}</h4>
+                          <button
+                            onClick={() =>
+                              setGeneratedTasks((prev) => prev.filter((_, i) => i !== index))
+                            }
+                            className="text-muted-foreground hover:text-foreground shrink-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                           {task.description}
                         </p>
-                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                          <Badge
-                            variant="outline"
-                            className={PRIORITY_CONFIG[task.priority]?.color}
-                          >
-                            {PRIORITY_CONFIG[task.priority]?.label}
+                        {task.category_name && (
+                          <Badge variant="outline" className="mt-2">
+                            {task.category_name}
                           </Badge>
-                          {task.category_name && (
-                            <Badge variant="outline">{task.category_name}</Badge>
-                          )}
+                        )}
+                        <div className="grid grid-cols-3 gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">상태</Label>
+                            <Select
+                              value={task.status}
+                              onValueChange={(v: string | null) => {
+                                if (v) updateTaskField(index, 'status', v);
+                              }}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+                                  <SelectItem key={key} value={key}>
+                                    {config.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">시작일</Label>
+                            <Input
+                              type="date"
+                              value={task.start_date}
+                              onChange={(e) => updateTaskField(index, 'start_date', e.target.value)}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">마감일</Label>
+                            <Input
+                              type="date"
+                              value={task.deployment_date}
+                              onChange={(e) => updateTaskField(index, 'deployment_date', e.target.value)}
+                              className="h-8 text-xs"
+                            />
+                          </div>
                         </div>
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setGeneratedTasks((prev) => prev.filter((_, i) => i !== index));
-                        }}
-                        className="text-muted-foreground hover:text-foreground shrink-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
                     </div>
                   </CardContent>
                 </Card>
