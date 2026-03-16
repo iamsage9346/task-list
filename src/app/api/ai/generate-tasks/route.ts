@@ -1,17 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
-interface GeneratedTask {
-  title: string;
-  description: string;
-  status: 'not_started' | 'in_progress';
-  progress: number;
-  category_name: string | null;
-}
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,9 +10,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '프롬프트를 입력해주세요.' }, { status: 400 });
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json({ error: 'ANTHROPIC_API_KEY가 설정되지 않았습니다.' }, { status: 500 });
+    // Get user's API key from settings
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let apiKey = process.env.ANTHROPIC_API_KEY;
+
+    if (user) {
+      const { data: settings } = await supabase
+        .from('user_settings')
+        .select('anthropic_api_key')
+        .eq('user_id', user.id)
+        .single();
+
+      if (settings?.anthropic_api_key) {
+        apiKey = settings.anthropic_api_key;
+      }
     }
+
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Anthropic API 키가 설정되지 않았습니다. 설정 페이지에서 입력해주세요.' }, { status: 400 });
+    }
+
+    const client = new Anthropic({ apiKey });
 
     const categoryNames = (categories as { name: string }[])?.map((c) => c.name) ?? [];
 
@@ -58,14 +67,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'AI 응답을 처리할 수 없습니다.' }, { status: 500 });
     }
 
-    // Extract JSON from the response (handle potential markdown code blocks)
     let jsonText = content.text.trim();
     const codeBlockMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (codeBlockMatch) {
       jsonText = codeBlockMatch[1].trim();
     }
 
-    const tasks: GeneratedTask[] = JSON.parse(jsonText);
+    const tasks = JSON.parse(jsonText);
 
     if (!Array.isArray(tasks)) {
       return NextResponse.json({ error: 'AI가 올바른 형식으로 응답하지 않았습니다.' }, { status: 500 });

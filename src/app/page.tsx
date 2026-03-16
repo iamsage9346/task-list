@@ -7,6 +7,8 @@ import { CalendarView } from '@/components/dashboard/calendar-view';
 import { PromptInput } from '@/components/dashboard/prompt-input';
 import { Separator } from '@/components/ui/separator';
 import { SlackTestButton } from '@/components/dashboard/slack-test-button';
+import { UserMenu } from '@/components/dashboard/user-menu';
+import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,11 +16,14 @@ import { Button } from '@/components/ui/button';
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const [tasks, stats, categories] = await Promise.all([
+  const [tasks, stats, categories, supabase] = await Promise.all([
     getTasks(),
     getDashboardStats(),
     getCategories(),
+    createClient(),
   ]);
+
+  const { data: { user } } = await supabase.auth.getUser();
 
   return (
     <main className="min-h-screen bg-background">
@@ -38,6 +43,7 @@ export default async function DashboardPage() {
                 공유 페이지
               </Button>
             </Link>
+            {user && <UserMenu email={user.email ?? ''} />}
           </div>
         </div>
 
