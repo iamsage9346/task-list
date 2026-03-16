@@ -1,5 +1,6 @@
-import { formatDateKorean, getDDay, getProgressBar } from './utils';
+import { formatDateKorean, getDDay, getProgressBar, formatDate } from './utils';
 import type { TaskWithCategory } from './types/database';
+import { STATUS_CONFIG } from './types/database';
 
 interface SlackReportData {
   tasks: TaskWithCategory[];
@@ -9,56 +10,74 @@ interface SlackReportData {
 export function buildMorningReport({ tasks, appUrl }: SlackReportData): object {
   const today = formatDateKorean(new Date());
 
-  const inProgressTasks = tasks.filter(
+  const allTasks = tasks;
+  const totalTasks = allTasks.length;
+  const completedTasks = allTasks.filter(
+    (t) => t.status === 'completed' || t.status === 'deployed'
+  ).length;
+  const inProgressTasks = allTasks.filter(
     (t) => t.status === 'in_progress' || t.status === 'review'
   );
-  const upcomingDeployments = tasks
-    .filter((t) => t.deployment_date && t.status !== 'deployed')
+  const notStartedTasks = allTasks.filter((t) => t.status === 'not_started');
+  const overallProgress =
+    totalTasks > 0
+      ? Math.round(allTasks.reduce((sum, t) => sum + t.progress, 0) / totalTasks)
+      : 0;
+
+  const upcomingDeployments = allTasks
+    .filter((t) => t.deployment_date && t.status !== 'deployed' && t.status !== 'completed')
     .sort(
       (a, b) =>
         new Date(a.deployment_date!).getTime() - new Date(b.deployment_date!).getTime()
     )
-    .slice(0, 5);
+    .slice(0, 7);
 
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(
-    (t) => t.status === 'completed' || t.status === 'deployed'
-  ).length;
-  const overallProgress =
-    totalTasks > 0
-      ? Math.round(tasks.reduce((sum, t) => sum + t.progress, 0) / totalTasks)
-      : 0;
-
-  let text = `📋 일일 업무 보고 - ${today}\n\n`;
+  // Build Slack message
+  let text = `📋 *일일 업무 보고* — ${today}\n\n`;
 
   // Overall stats
-  text += `*전체 현황: ${completedTasks}/${totalTasks}개 완료 (${overallProgress}%)*\n\n`;
+  text += `📊 *전체 현황*\n`;
+  text += `• 전체: ${totalTasks}개 | 완료: ${completedTasks}개 | 진행 중: ${inProgressTasks.length}개 | 시작 전: ${notStartedTasks.length}개\n`;
+  text += `• 전체 진행률: ${getProgressBar(overallProgress)} ${overallProgress}%\n\n`;
 
-  // Progress bars for in-progress tasks
+  // In-progress tasks with progress bars
   if (inProgressTasks.length > 0) {
-    text += `*작업별 진행률*\n`;
+    text += `🔧 *진행 중인 업무*\n`;
     inProgressTasks.forEach((t) => {
       const bar = getProgressBar(t.progress);
-      text += `${bar} ${t.progress}% - ${t.title}\n`;
+      const category = t.categories ? `[${t.categories.name}]` : '';
+      const dateInfo = t.deployment_date ? ` (마감: ${formatDate(t.deployment_date, 'M/d')} ${getDDay(t.deployment_date)})` : '';
+      text += `${bar} ${t.progress}% — ${category} ${t.title}${dateInfo}\n`;
     });
     text += '\n';
   }
 
-  // Upcoming deployments
+  // Not started tasks
+  if (notStartedTasks.length > 0) {
+    text += `⏳ *시작 전 업무*\n`;
+    notStartedTasks.forEach((t) => {
+      const category = t.categories ? `[${t.categories.name}]` : '';
+      const dateInfo = t.start_date ? ` (시작: ${formatDate(t.start_date, 'M/d')})` : '';
+      text += `• ${category} ${t.title}${dateInfo}\n`;
+    });
+    text += '\n';
+  }
+
+  // Upcoming deadlines
   if (upcomingDeployments.length > 0) {
-    text += `*📅 다가오는 배포 일정*\n`;
+    text += `📅 *이번 주 마감 일정*\n`;
     upcomingDeployments.forEach((t) => {
       const dDay = getDDay(t.deployment_date!);
-      const dateStr = t.deployment_date!.slice(5).replace('-', '/');
-      text += `• ${dateStr} (${dDay}): ${t.title}\n`;
+      const dateStr = formatDate(t.deployment_date!, 'M/d (EEE)');
+      const statusLabel = STATUS_CONFIG[t.status].label;
+      text += `• ${dateStr} ${dDay} — ${t.title} (${statusLabel}, ${t.progress}%)\n`;
     });
     text += '\n';
   }
 
-  text += `전체 현황 보기: ${appUrl}/share`;
+  text += `🔗 <${appUrl}/share|전체 현황 보기>`;
 
   return {
-    text,
     blocks: [
       {
         type: 'section',

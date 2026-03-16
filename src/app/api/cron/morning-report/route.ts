@@ -12,11 +12,10 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createAdminClient();
 
-    // Fetch all active tasks
+    // Fetch all tasks (including completed for stats)
     const { data: tasks, error: tasksError } = await supabase
       .from('tasks')
       .select('*, categories(*)')
-      .not('status', 'eq', 'deployed')
       .order('sort_order', { ascending: true });
 
     if (tasksError) throw tasksError;
