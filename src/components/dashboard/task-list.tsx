@@ -5,7 +5,7 @@ import { TaskCard } from './task-card';
 import { TaskForm } from './task-form';
 import { CategoryFilter } from './category-filter';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { createTask, updateTask, deleteTask, deleteAllTasks } from '@/lib/actions/task-actions';
 import type {
   TaskWithCategory,
@@ -34,7 +34,19 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithCategory | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['completed', 'deployed']));
   const [, startTransition] = useTransition();
+
+  const COLLAPSIBLE_STATUSES = new Set(['completed', 'deployed']);
+
+  const toggleSection = (status: string) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  };
 
   const filteredTasks = selectedCategory
     ? initialTasks.filter((t) => t.category_id === selectedCategory)
@@ -123,26 +135,41 @@ export function TaskList({ initialTasks, categories }: TaskListProps) {
         </div>
       ) : (
         <div className="space-y-6">
-          {tasksByStatus.map(({ status, config, tasks }) => (
-            <div key={status}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${config.color}`}>
-                  {config.label}
-                </span>
-                <span className="text-sm text-muted-foreground">{tasks.length}개</span>
+          {tasksByStatus.map(({ status, config, tasks }) => {
+            const isCollapsible = COLLAPSIBLE_STATUSES.has(status);
+            const isCollapsed = collapsedSections.has(status);
+
+            return (
+              <div key={status}>
+                <div
+                  className={`flex items-center gap-2 mb-3 ${isCollapsible ? 'cursor-pointer select-none' : ''}`}
+                  onClick={() => isCollapsible && toggleSection(status)}
+                >
+                  {isCollapsible && (
+                    isCollapsed
+                      ? <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      : <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${config.color}`}>
+                    {config.label}
+                  </span>
+                  <span className="text-sm text-muted-foreground">{tasks.length}개</span>
+                </div>
+                {!isCollapsed && (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {tasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {tasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
