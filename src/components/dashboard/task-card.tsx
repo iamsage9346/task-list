@@ -1,9 +1,9 @@
 'use client';
 
+import { useState, useRef, useCallback, useTransition } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import { MoreHorizontal, Pencil, Trash2, ExternalLink, Calendar } from 'lucide-r
 import type { TaskWithCategory } from '@/lib/types/database';
 import { STATUS_CONFIG, PRIORITY_CONFIG } from '@/lib/types/database';
 import { getDDay, formatDate } from '@/lib/utils';
+import { updateTask } from '@/lib/actions/task-actions';
 import Link from 'next/link';
 
 interface TaskCardProps {
@@ -25,6 +26,23 @@ interface TaskCardProps {
 export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
   const statusConfig = STATUS_CONFIG[task.status];
   const priorityConfig = PRIORITY_CONFIG[task.priority];
+  const [progress, setProgress] = useState(task.progress);
+  const [, startTransition] = useTransition();
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleProgressChange = useCallback((value: number | readonly number[]) => {
+    const newProgress = Array.isArray(value) ? value[0] : value;
+    setProgress(newProgress);
+
+    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    saveTimeout.current = setTimeout(() => {
+      if (newProgress !== task.progress) {
+        startTransition(async () => {
+          await updateTask({ id: task.id, progress: newProgress });
+        });
+      }
+    }, 500);
+  }, [task.id, task.progress, startTransition]);
 
   return (
     <Card className="group hover:shadow-md transition-shadow">
@@ -86,15 +104,26 @@ export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
         <div className="mt-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-muted-foreground">진행률</span>
-            <span className="text-xs font-medium">{task.progress}%</span>
+            <span className="text-sm font-bold">{progress}%</span>
           </div>
-          <Progress value={task.progress} className="h-2" />
+          <Slider
+            value={[progress]}
+            onValueChange={handleProgressChange}
+            max={100}
+            step={5}
+          />
         </div>
-        {task.deployment_date && (
+        {(task.start_date || task.deployment_date) && (
           <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />
             <span>
-              배포: {formatDate(task.deployment_date, 'M/d')} ({getDDay(task.deployment_date)})
+              {task.start_date && formatDate(task.start_date, 'M/d')}
+              {task.start_date && task.deployment_date && ' → '}
+              {task.deployment_date && (
+                <>
+                  {formatDate(task.deployment_date, 'M/d')} ({getDDay(task.deployment_date)})
+                </>
+              )}
             </span>
           </div>
         )}

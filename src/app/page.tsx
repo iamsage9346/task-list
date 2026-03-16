@@ -3,6 +3,8 @@ import { getCategories } from '@/lib/actions/category-actions';
 import { StatsHeader } from '@/components/dashboard/stats-header';
 import { TaskList } from '@/components/dashboard/task-list';
 import { ProjectOverview } from '@/components/dashboard/project-overview';
+import { CalendarView } from '@/components/dashboard/calendar-view';
+import { PromptInput } from '@/components/dashboard/prompt-input';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { Share2 } from 'lucide-react';
@@ -35,13 +37,18 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        <StatsHeader stats={stats} />
+        <PromptInput categories={categories} />
+
+        <div className="mt-6">
+          <StatsHeader stats={stats} />
+        </div>
 
         <Separator className="my-6" />
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           <TaskList initialTasks={tasks} categories={categories} />
           <div className="space-y-4">
+            <CalendarView tasks={tasks} />
             <ProjectOverview upcomingDeployments={stats.upcomingDeployments} />
           </div>
         </div>

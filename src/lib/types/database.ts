@@ -19,6 +19,7 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   category_id: string | null;
+  start_date: string | null;
   deployment_date: string | null;
   sort_order: number;
   created_at: string;
@@ -49,6 +50,7 @@ export interface CreateTaskInput {
   status?: TaskStatus;
   priority?: TaskPriority;
   category_id?: string | null;
+  start_date?: string | null;
   deployment_date?: string | null;
 }
 
@@ -73,7 +75,6 @@ export interface DashboardStats {
   completedTasks: number;
   inProgressTasks: number;
   blockedTasks: number;
-  overallProgress: number;
   upcomingDeployments: TaskWithCategory[];
 }
 

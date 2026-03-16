@@ -45,6 +45,7 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
   const [status, setStatus] = useState<TaskStatus>('not_started');
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [categoryId, setCategoryId] = useState<string>('none');
+  const [startDate, setStartDate] = useState('');
   const [deploymentDate, setDeploymentDate] = useState('');
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
       setStatus(task.status);
       setPriority(task.priority);
       setCategoryId(task.category_id ?? 'none');
+      setStartDate(task.start_date ?? '');
       setDeploymentDate(task.deployment_date ?? '');
     } else {
       setTitle('');
@@ -63,6 +65,7 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
       setStatus('not_started');
       setPriority('medium');
       setCategoryId('none');
+      setStartDate('');
       setDeploymentDate('');
     }
   }, [task, open]);
@@ -79,6 +82,7 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
         status,
         priority,
         category_id: categoryId === 'none' ? null : categoryId,
+        start_date: startDate || null,
         deployment_date: deploymentDate || null,
       };
       await onSubmit(data as CreateTaskInput | UpdateTaskInput);
@@ -187,14 +191,25 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="deployment_date">배포 예정일</Label>
-            <Input
-              id="deployment_date"
-              type="date"
-              value={deploymentDate}
-              onChange={(e) => setDeploymentDate(e.target.value)}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="start_date">시작일</Label>
+              <Input
+                id="start_date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deployment_date">종료일 (배포)</Label>
+              <Input
+                id="deployment_date"
+                type="date"
+                value={deploymentDate}
+                onChange={(e) => setDeploymentDate(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

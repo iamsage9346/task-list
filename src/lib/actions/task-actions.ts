@@ -53,6 +53,7 @@ export async function createTask(input: CreateTaskInput): Promise<void> {
     status: input.status ?? 'not_started',
     priority: input.priority ?? 'medium',
     category_id: input.category_id ?? null,
+    start_date: input.start_date ?? null,
     deployment_date: input.deployment_date ?? null,
   };
 
@@ -98,10 +99,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   ).length;
   const inProgressTasks = allTasks.filter((t) => t.status === 'in_progress').length;
   const blockedTasks = allTasks.filter((t) => t.status === 'blocked').length;
-  const overallProgress =
-    totalTasks > 0
-      ? Math.round(allTasks.reduce((sum, t) => sum + t.progress, 0) / totalTasks)
-      : 0;
 
   const upcomingDeployments = allTasks
     .filter((t) => t.deployment_date && t.status !== 'deployed')
@@ -116,7 +113,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     completedTasks,
     inProgressTasks,
     blockedTasks,
-    overallProgress,
     upcomingDeployments,
   };
 }

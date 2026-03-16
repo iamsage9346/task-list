@@ -32,14 +32,12 @@ export function ShareView({ tasks, stats, categories }: ShareViewProps) {
       {/* Overall stats */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <span className="text-sm font-medium">
               전체 현황: {stats.completedTasks}/{stats.totalTasks}개 완료
             </span>
-            <span className="text-lg font-bold">{stats.overallProgress}%</span>
           </div>
-          <Progress value={stats.overallProgress} className="h-4" />
-          <div className="flex gap-4 mt-4 text-sm text-muted-foreground">
+          <div className="flex gap-4 mt-3 text-sm text-muted-foreground">
             <span>진행 중: {stats.inProgressTasks}</span>
             <span>차단됨: {stats.blockedTasks}</span>
           </div>
