@@ -45,9 +45,7 @@ interface CalendarViewProps {
 export function CalendarView({ tasks }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [popupPos, setPopupPos] = useState<{ top: number; left: number } | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
-  const calendarRef = useRef<HTMLDivElement>(null);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -75,31 +73,16 @@ export function CalendarView({ tasks }: CalendarViewProps) {
   const today = new Date();
   const selectedDayTasks = selectedDay ? getTasksForDay(selectedDay) : [];
 
-  const handleDayClick = (day: Date, e: React.MouseEvent<HTMLDivElement>) => {
+  const handleDayClick = (day: Date) => {
     const dayTasks = getTasksForDay(day);
     if (dayTasks.length === 0) return;
 
     if (selectedDay && isSameDay(selectedDay, day)) {
       setSelectedDay(null);
-      setPopupPos(null);
       return;
     }
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const calendarRect = calendarRef.current?.getBoundingClientRect();
-    if (!calendarRect) return;
-
-    const top = rect.bottom - calendarRect.top + 4;
-    let left = rect.left - calendarRect.left;
-    // Keep popup within calendar bounds
-    const popupWidth = 320;
-    if (left + popupWidth > calendarRect.width) {
-      left = calendarRect.width - popupWidth;
-    }
-    if (left < 0) left = 0;
-
     setSelectedDay(day);
-    setPopupPos({ top, left });
   };
 
   // Close popup on outside click
@@ -107,7 +90,6 @@ export function CalendarView({ tasks }: CalendarViewProps) {
     const handleClick = (e: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
         setSelectedDay(null);
-        setPopupPos(null);
       }
     };
     if (selectedDay) {
@@ -119,7 +101,6 @@ export function CalendarView({ tasks }: CalendarViewProps) {
   // Close popup on month change
   useEffect(() => {
     setSelectedDay(null);
-    setPopupPos(null);
   }, [currentMonth]);
 
   return (
@@ -158,7 +139,7 @@ export function CalendarView({ tasks }: CalendarViewProps) {
         </div>
       </CardHeader>
       <CardContent className="p-2">
-        <div ref={calendarRef} className="relative">
+        <div className="relative">
           <div className="grid grid-cols-7 gap-px">
             {weekDays.map((day) => (
               <div
@@ -180,7 +161,7 @@ export function CalendarView({ tasks }: CalendarViewProps) {
                   className={`min-h-[48px] p-1 rounded-md border text-xs cursor-pointer transition-colors ${
                     !isCurrentMonth ? 'opacity-30' : ''
                   } ${isSelected ? 'border-primary bg-primary/10' : isToday ? 'border-primary bg-primary/5' : 'border-transparent hover:bg-muted/50'}`}
-                  onClick={(e) => handleDayClick(day, e)}
+                  onClick={() => handleDayClick(day)}
                 >
                   <div
                     className={`text-right mb-0.5 ${
@@ -211,19 +192,18 @@ export function CalendarView({ tasks }: CalendarViewProps) {
             })}
           </div>
 
-          {/* Day popup */}
-          {selectedDay && popupPos && selectedDayTasks.length > 0 && (
+          {/* Day popup - fixed at top */}
+          {selectedDay && selectedDayTasks.length > 0 && (
             <div
               ref={popupRef}
-              className="absolute z-50 w-80 bg-popover border rounded-lg shadow-lg animate-in fade-in-0 zoom-in-95"
-              style={{ top: popupPos.top, left: popupPos.left }}
+              className="absolute z-50 top-0 left-0 right-0 bg-popover border rounded-lg shadow-lg animate-in fade-in-0 slide-in-from-top-2"
             >
               <div className="flex items-center justify-between p-3 border-b">
                 <h3 className="font-semibold text-sm">
                   {format(selectedDay, 'M월 d일 (EEEE)', { locale: ko })}
                 </h3>
                 <button
-                  onClick={() => { setSelectedDay(null); setPopupPos(null); }}
+                  onClick={() => setSelectedDay(null)}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
