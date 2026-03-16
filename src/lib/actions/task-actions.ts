@@ -122,7 +122,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     (t) => t.status === 'completed' || t.status === 'deployed'
   ).length;
   const inProgressTasks = allTasks.filter((t) => t.status === 'in_progress').length;
-  const blockedTasks = allTasks.filter((t) => t.status === 'blocked').length;
 
   const upcomingDeployments = allTasks
     .filter((t) => t.deployment_date && t.status !== 'deployed')
@@ -136,7 +135,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalTasks,
     completedTasks,
     inProgressTasks,
-    blockedTasks,
     upcomingDeployments,
   };
 }

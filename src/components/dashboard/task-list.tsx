@@ -26,7 +26,6 @@ const STATUS_ORDER: TaskStatus[] = [
   'in_progress',
   'not_started',
   'review',
-  'blocked',
   'completed',
   'deployed',
 ];

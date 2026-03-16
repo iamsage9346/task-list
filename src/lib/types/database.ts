@@ -1,5 +1,5 @@
-export type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'review' | 'completed' | 'deployed';
-export type NoteType = 'blocker' | 'note' | 'update';
+export type TaskStatus = 'not_started' | 'in_progress' | 'review' | 'completed' | 'deployed';
+export type NoteType = 'note' | 'update';
 
 export interface Category {
   id: string;
@@ -71,7 +71,6 @@ export interface DashboardStats {
   totalTasks: number;
   completedTasks: number;
   inProgressTasks: number;
-  blockedTasks: number;
   upcomingDeployments: TaskWithCategory[];
 }
 
@@ -79,7 +78,6 @@ export interface DashboardStats {
 export const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string }> = {
   not_started: { label: '시작 전', color: 'bg-gray-100 text-gray-800' },
   in_progress: { label: '진행 중', color: 'bg-blue-100 text-blue-800' },
-  blocked: { label: '차단됨', color: 'bg-red-100 text-red-800' },
   review: { label: '리뷰 중', color: 'bg-yellow-100 text-yellow-800' },
   completed: { label: '완료', color: 'bg-green-100 text-green-800' },
   deployed: { label: '배포됨', color: 'bg-purple-100 text-purple-800' },

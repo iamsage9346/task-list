@@ -61,7 +61,6 @@ function parsePrompt(text: string, categories: Category[]): CreateTaskInput {
   const statusMap: [RegExp, TaskStatus][] = [
     [/진행\s*중/, 'in_progress'],
     [/시작\s*전/, 'not_started'],
-    [/차단|블로커/, 'blocked'],
     [/리뷰\s*중/, 'review'],
     [/완료/, 'completed'],
     [/배포\s*됨/, 'deployed'],

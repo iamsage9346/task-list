@@ -39,7 +39,6 @@ export function ShareView({ tasks, stats, categories }: ShareViewProps) {
           </div>
           <div className="flex gap-4 mt-3 text-sm text-muted-foreground">
             <span>진행 중: {stats.inProgressTasks}</span>
-            <span>차단됨: {stats.blockedTasks}</span>
           </div>
         </CardContent>
       </Card>

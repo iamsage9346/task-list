@@ -22,7 +22,6 @@ import {
   Pencil,
   Trash2,
   Plus,
-  AlertTriangle,
   MessageSquare,
   RefreshCw,
 } from 'lucide-react';
@@ -42,7 +41,6 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 
 const NOTE_TYPE_CONFIG: Record<NoteType, { label: string; icon: React.ElementType; color: string }> = {
-  blocker: { label: '차단 요소', icon: AlertTriangle, color: 'text-red-600' },
   note: { label: '메모', icon: MessageSquare, color: 'text-blue-600' },
   update: { label: '업데이트', icon: RefreshCw, color: 'text-green-600' },
 };
@@ -169,7 +167,7 @@ export function TaskDetail({ task, categories }: TaskDetailProps) {
           {/* Notes section */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">노트 & 차단 요소</CardTitle>
+              <CardTitle className="text-base">노트</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-2 mb-4">

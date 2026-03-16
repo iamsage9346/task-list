@@ -1,13 +1,12 @@
 import { formatDateKorean, getDDay, getProgressBar } from './utils';
-import type { TaskWithCategory, TaskNote } from './types/database';
+import type { TaskWithCategory } from './types/database';
 
 interface SlackReportData {
   tasks: TaskWithCategory[];
-  blockers: (TaskNote & { task_title: string })[];
   appUrl: string;
 }
 
-export function buildMorningReport({ tasks, blockers, appUrl }: SlackReportData): object {
+export function buildMorningReport({ tasks, appUrl }: SlackReportData): object {
   const today = formatDateKorean(new Date());
 
   const inProgressTasks = tasks.filter(
@@ -52,15 +51,6 @@ export function buildMorningReport({ tasks, blockers, appUrl }: SlackReportData)
       const dDay = getDDay(t.deployment_date!);
       const dateStr = t.deployment_date!.slice(5).replace('-', '/');
       text += `• ${dateStr} (${dDay}): ${t.title}\n`;
-    });
-    text += '\n';
-  }
-
-  // Blockers
-  if (blockers.length > 0) {
-    text += `*🚨 차단 요소*\n`;
-    blockers.forEach((b) => {
-      text += `• [${b.task_title}] ${b.content}\n`;
     });
     text += '\n';
   }

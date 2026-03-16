@@ -21,25 +21,10 @@ export async function GET(request: NextRequest) {
 
     if (tasksError) throw tasksError;
 
-    // Fetch blockers
-    const { data: blockerNotes, error: notesError } = await supabase
-      .from('task_notes')
-      .select('*, tasks!inner(title)')
-      .eq('type', 'blocker')
-      .order('created_at', { ascending: false });
-
-    if (notesError) throw notesError;
-
-    const blockers = (blockerNotes ?? []).map((note) => ({
-      ...note,
-      task_title: (note.tasks as unknown as { title: string }).title,
-    }));
-
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app.vercel.app';
 
     const payload = buildMorningReport({
       tasks: tasks ?? [],
-      blockers,
       appUrl,
     });
 
@@ -48,7 +33,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: sent,
       tasksCount: tasks?.length ?? 0,
-      blockersCount: blockers.length,
     });
   } catch (error) {
     console.error('Morning report error:', error);

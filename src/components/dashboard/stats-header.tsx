@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import type { DashboardStats } from '@/lib/types/database';
-import { ListTodo, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
+import { ListTodo, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface StatsHeaderProps {
   stats: DashboardStats;
@@ -31,17 +31,10 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
       color: 'text-green-600',
       bg: 'bg-green-50',
     },
-    {
-      label: '차단됨',
-      value: stats.blockedTasks,
-      icon: AlertTriangle,
-      color: 'text-red-600',
-      bg: 'bg-red-50',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-3 gap-4">
       {statItems.map((item) => (
         <Card key={item.label}>
           <CardContent className="p-4">
