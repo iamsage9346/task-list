@@ -6,6 +6,7 @@ import { ProjectOverview } from '@/components/dashboard/project-overview';
 import { CalendarView } from '@/components/dashboard/calendar-view';
 import { PromptInput } from '@/components/dashboard/prompt-input';
 import { Separator } from '@/components/ui/separator';
+import { SlackTestButton } from '@/components/dashboard/slack-test-button';
 import Link from 'next/link';
 import { Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,12 +30,15 @@ export default async function DashboardPage() {
               태스크별 진행 상황을 한눈에 확인하세요
             </p>
           </div>
-          <Link href="/share">
-            <Button variant="outline" size="sm">
-              <Share2 className="mr-2 h-4 w-4" />
-              공유 페이지
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <SlackTestButton />
+            <Link href="/share">
+              <Button variant="outline" size="sm">
+                <Share2 className="mr-2 h-4 w-4" />
+                공유 페이지
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <CalendarView tasks={tasks} />
