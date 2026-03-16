@@ -227,9 +227,19 @@ export function PromptInput({ categories }: PromptInputProps) {
 
   const selectedCount = generatedTasks.filter((t) => t.selected).length;
 
+  const missingDatesCount = generatedTasks.filter(
+    (t) => t.selected && (!t.start_date || !t.deployment_date)
+  ).length;
+
   const handleCreateAll = () => {
     const selected = generatedTasks.filter((t) => t.selected);
     if (selected.length === 0) return;
+
+    const missingDates = selected.some((t) => !t.start_date || !t.deployment_date);
+    if (missingDates) {
+      toast.error('모든 태스크에 시작일과 마감일을 입력해주세요.');
+      return;
+    }
 
     const inputs: CreateTaskInput[] = selected.map((t) => {
       const matchedCategory = categories.find(
@@ -241,8 +251,8 @@ export function PromptInput({ categories }: PromptInputProps) {
         status: t.status,
         progress: t.status === 'completed' ? 100 : t.status === 'deployed' ? 100 : t.progress,
         category_id: matchedCategory?.id ?? null,
-        start_date: t.start_date || null,
-        deployment_date: t.deployment_date || null,
+        start_date: t.start_date,
+        deployment_date: t.deployment_date,
       };
     });
 
@@ -392,21 +402,25 @@ export function PromptInput({ categories }: PromptInputProps) {
                             </Select>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">시작일</Label>
+                            <Label className={`text-xs ${!task.start_date && task.selected ? 'text-red-500 font-medium' : 'text-muted-foreground'}`}>
+                              시작일 *
+                            </Label>
                             <Input
                               type="date"
                               value={task.start_date}
                               onChange={(e) => updateTaskField(index, 'start_date', e.target.value)}
-                              className="h-8 text-xs"
+                              className={`h-8 text-xs ${!task.start_date && task.selected ? 'border-red-300' : ''}`}
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">마감일</Label>
+                            <Label className={`text-xs ${!task.deployment_date && task.selected ? 'text-red-500 font-medium' : 'text-muted-foreground'}`}>
+                              마감일 *
+                            </Label>
                             <Input
                               type="date"
                               value={task.deployment_date}
                               onChange={(e) => updateTaskField(index, 'deployment_date', e.target.value)}
-                              className="h-8 text-xs"
+                              className={`h-8 text-xs ${!task.deployment_date && task.selected ? 'border-red-300' : ''}`}
                             />
                           </div>
                         </div>
@@ -417,9 +431,14 @@ export function PromptInput({ categories }: PromptInputProps) {
               ))}
             </div>
 
+            {missingDatesCount > 0 && (
+              <p className="text-xs text-red-500">
+                {missingDatesCount}개 태스크에 시작일/마감일이 없습니다
+              </p>
+            )}
             <Button
               onClick={handleCreateAll}
-              disabled={isPending || selectedCount === 0}
+              disabled={isPending || selectedCount === 0 || missingDatesCount > 0}
               className="w-full gap-2"
             >
               {isPending ? (

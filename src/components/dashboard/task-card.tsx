@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Pencil, Trash2, ExternalLink, Calendar } from 'lucide-react';
-import type { TaskWithCategory } from '@/lib/types/database';
+import type { TaskWithCategory, TaskStatus } from '@/lib/types/database';
 import { STATUS_CONFIG } from '@/lib/types/database';
 import { getDDay, formatDate } from '@/lib/utils';
 import { updateTask } from '@/lib/actions/task-actions';
@@ -36,8 +36,14 @@ export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
       if (newProgress !== task.progress) {
+        // 진행률에 따라 상태 자동 변경: 0=시작전, 1~99=진행중, 100=완료
+        let newStatus: string | undefined;
+        if (newProgress === 0) newStatus = 'not_started';
+        else if (newProgress === 100) newStatus = 'completed';
+        else newStatus = 'in_progress';
+
         startTransition(async () => {
-          await updateTask({ id: task.id, progress: newProgress });
+          await updateTask({ id: task.id, progress: newProgress, status: newStatus as TaskStatus });
         });
       }
     }, 500);

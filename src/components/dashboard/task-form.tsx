@@ -162,6 +162,9 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
               onValueChange={(v) => {
                 const val = Array.isArray(v) ? v[0] : v;
                 setProgress(val);
+                if (val === 0) setStatus('not_started');
+                else if (val === 100) setStatus('completed');
+                else setStatus('in_progress');
               }}
               max={100}
               step={5}
@@ -170,21 +173,23 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start_date">시작일</Label>
+              <Label htmlFor="start_date">시작일 *</Label>
               <Input
                 id="start_date"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="deployment_date">종료일 (배포)</Label>
+              <Label htmlFor="deployment_date">마감일 *</Label>
               <Input
                 id="deployment_date"
                 type="date"
                 value={deploymentDate}
                 onChange={(e) => setDeploymentDate(e.target.value)}
+                required
               />
             </div>
           </div>
@@ -193,7 +198,7 @@ export function TaskForm({ open, onOpenChange, task, categories, onSubmit }: Tas
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               취소
             </Button>
-            <Button type="submit" disabled={loading || !title.trim()}>
+            <Button type="submit" disabled={loading || !title.trim() || !startDate || !deploymentDate}>
               {loading ? '저장 중...' : task ? '수정' : '생성'}
             </Button>
           </div>
