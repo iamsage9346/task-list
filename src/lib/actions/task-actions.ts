@@ -76,6 +76,25 @@ export async function updateTask(input: UpdateTaskInput): Promise<void> {
   revalidatePath(`/tasks/${id}`);
 }
 
+export async function createTasks(inputs: CreateTaskInput[]): Promise<void> {
+  const supabase = await createClient();
+
+  const rows = inputs.map((input) => ({
+    title: input.title,
+    description: input.description ?? null,
+    progress: input.progress ?? 0,
+    status: input.status ?? 'not_started',
+    priority: input.priority ?? 'medium',
+    category_id: input.category_id ?? null,
+    start_date: input.start_date ?? null,
+    deployment_date: input.deployment_date ?? null,
+  }));
+
+  const { error } = await supabase.from('tasks').insert(rows);
+  if (error) throw new Error(error.message);
+  revalidatePath('/');
+}
+
 export async function deleteTask(id: string): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase.from('tasks').delete().eq('id', id);
