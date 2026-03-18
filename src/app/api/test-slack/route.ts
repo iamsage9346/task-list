@@ -24,11 +24,12 @@ export async function POST() {
       return NextResponse.json({ error: 'Slack Webhook URL이 설정되지 않았습니다. 설정 페이지에서 입력해주세요.' }, { status: 400 });
     }
 
-    // Fetch tasks
+    // Fetch only the current user's tasks
     const adminSupabase = createAdminClient();
     const { data: tasks, error } = await adminSupabase
       .from('tasks')
       .select('*, categories(*)')
+      .eq('user_id', user.id)
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
